@@ -12,4 +12,20 @@ Preview of the setup.
 
 ## TODO
 
-Create a installer script which will install the software and copy the configuration on a fedora machine
+Create a installer script which will install the software and copy the configuration on a fedora machine. The steps are as follows.
+
+
+- install zsh
+- install oh-my-zsh
+- copy startup.sh
+- copy ~/.zshrc
+
+- install tmux
+- copy ~/.tmux.conf
+
+- install nvim
+- install vim-plug
+- copy ~/.config/nvim/init.vim
+
+- install kitty
+- copy ~/.config/kitty/kitty.config

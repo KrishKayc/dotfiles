@@ -1,0 +1,118 @@
+
+" Plugins
+call plug#begin()
+
+
+Plug 'tpope/vim-sensible'
+Plug 'preservim/nerdtree'
+Plug 'vim-ruby/vim-ruby'
+Plug 'tpope/vim-rails'
+Plug 'Shougo/neocomplete.vim'
+
+Plug 'neovim/nvim-lspconfig'
+Plug 'hrsh7th/nvim-compe'
+Plug 'hrsh7th/vim-vsnip'
+
+Plug 'junegunn/fzf.vim'
+
+Plug 'williamboman/mason.nvim'
+Plug 'williamboman/mason-lspconfig.nvim'
+Plug 'neovim/nvim-lspconfig'
+Plug 'catppuccin/vim', { 'as': 'catppuccin' }
+
+" Themes
+
+Plug 'mhartington/oceanic-next'
+
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+
+Plug 'dense-analysis/ale'
+
+Plug 'jiangmiao/auto-pairs'
+
+call plug#end()
+
+" Set color theme
+ if (has("termguicolors"))
+  set termguicolors
+ endif
+
+
+"let g:oceanic_next_terminal_bold = 1
+colorscheme OceanicNext
+"colorscheme catppuccin_macchiato
+
+set mouse=a
+set modifiable
+set ruler
+set number numberwidth=2
+set expandtab
+syntax enable
+set mouse=a
+set tabstop=2
+set softtabstop=2
+set shiftwidth=2
+set smarttab
+set background=dark
+
+set showmatch matchtime=3
+" hi MatchParen cterm=bold ctermbg=none ctermfg=#c594c5
+
+" Automatically remove all trailing whitespace
+" autocmd BufWritePre * %s/\s\+$//e
+
+au VimLeave * :!clear
+
+" Key remap
+nnoremap w :w<CR>
+nnoremap q :q<CR>
+nnoremap q! :q!<CR>
+nnoremap wq :wq<CR>
+
+xnoremap p pgvy
+
+filetype plugin indent on
+filetype on
+filetype indent on
+
+autocmd FileType ruby setlocal expandtab shiftwidth=2 tabstop=2
+autocmd FileType eruby setlocal expandtab shiftwidth=2 tabstop=2
+
+" NerdTree configs
+let g:NERDTreeNodeDelimiter = "\u00a0"
+
+map <C-b> :NERDTreeToggle<CR>
+autocmd BufWinEnter * NERDTreeFind
+map <leader>n  :NERDTreeFind<CR>
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
+" FZF
+" nnoremap<silent> <C-f> :FZF<CR>
+nnoremap<silent> <C-f> :Files<CR>
+set rtp+=/usr/local/opt/fzf
+
+nnoremap <leader>ff <cmd>Telescope find_files<CR>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+
+let g:airline_powerline_fonts = 1
+let g:airline_theme = 'catppuccin_mocha'
+
+" What do we use for linting
+let g:ale_linters = {
+\ 'javascript': ['eslint'],
+\ 'ruby': ['rubocop']
+\}
+
+" let g:ale_linters_explicit = 1
+
+" Lint Ruby files with binstub
+let g:ale_ruby_rubocop_executable = '/Users/rchandramoule/.rvm/gems/ruby-2.6.9/bin/rubocop'
+
+" Tune linter's error and warning signs
+let g:ale_sign_error = '\u2022'
+let g:ale_sign_warning = '\u2022'
+
+" Let's leave a column for the signs so that the left side of the window doesn't move
+let g:ale_sign_column_always = 1
+

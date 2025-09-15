@@ -15,6 +15,10 @@ require('packer').startup(function(use)
   },
   tag = 'nightly' -- optional, updated every week. (see repo)
   }
+  use {
+  'nvim-lualine/lualine.nvim',
+  requires = { 'nvim-tree/nvim-web-devicons', opt = true }
+  }
   use 'vim-ruby/vim-ruby'
   use 'tpope/vim-rails'
   use 'Shougo/neocomplete.vim'
@@ -34,8 +38,6 @@ require('packer').startup(function(use)
   -- Themes
   -- use 'mhartington/oceanic-next' -- commented out in original
 
-  use 'vim-airline/vim-airline'
-  use 'vim-airline/vim-airline-themes'
 
   use 'dense-analysis/ale'
 
@@ -172,6 +174,68 @@ vim.api.nvim_create_autocmd("VimEnter", {
 })
 
 ------------------------------------
+--------- lualine -------
+
+
+require('lualine').setup {
+  options = {
+    icons_enabled = true,
+    theme = 'auto',
+    component_separators = { left = '', right = ''},
+    section_separators = { left = '', right = ''},
+    disabled_filetypes = {
+      statusline = {},
+      winbar = {},
+    },
+    ignore_focus = {},
+    always_divide_middle = true,
+    always_show_tabline = true,
+    globalstatus = false,
+    refresh = {
+      statusline = 1000,
+      tabline = 1000,
+      winbar = 1000,
+      refresh_time = 16, -- ~60fps
+      events = {
+        'WinEnter',
+        'BufEnter',
+        'BufWritePost',
+        'SessionLoadPost',
+        'FileChangedShellPost',
+        'VimResized',
+        'Filetype',
+        'CursorMoved',
+        'CursorMovedI',
+        'ModeChanged',
+      },
+    }
+  },
+  sections = {
+    lualine_a = {'mode'},
+    lualine_b = {'branch', 'diff', 'diagnostics'},
+    lualine_c = {'filename'},
+    lualine_x = {'encoding', 'fileformat', 'filetype'},
+    lualine_y = {'progress'},
+    lualine_z = {'location'}
+  },
+  inactive_sections = {
+    lualine_a = {},
+    lualine_b = {},
+    lualine_c = {'filename'},
+    lualine_x = {'location'},
+    lualine_y = {},
+    lualine_z = {}
+  },
+  tabline = {},
+  winbar = {},
+  inactive_winbar = {},
+  extensions = {}
+}
+
+
+-----------------------------
+
+
 -- split window navigations
 local opts = { noremap = true, silent = true }
 
@@ -187,10 +251,6 @@ vim.opt.rtp:append('/usr/local/opt/fzf')
 
 vim.api.nvim_set_keymap('n', '<leader>ff', '<cmd>Telescope find_files<CR>', opts)
 vim.api.nvim_set_keymap('n', '<leader>fg', '<cmd>Telescope live_grep<CR>', opts)
-
--- Airline config
-vim.g.airline_powerline_fonts = 1
-vim.g.airline_theme = 'catppuccin_mocha'
 
 -- ALE config
 vim.g.ale_linters = {

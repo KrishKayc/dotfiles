@@ -8,13 +8,29 @@ require('packer').startup(function(use)
 
   -- Your plugins
   use 'tpope/vim-sensible'
-  use 'preservim/nerdtree'
   use { 'nvim-tree/nvim-tree.lua',
   requires = {
     'nvim-tree/nvim-web-devicons', -- optional, for file icons
   },
-  tag = 'nightly' -- optional, updated every week. (see repo)
+   config = function()
+      require("nvim-tree").setup()
+    end
   }
+  use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
+-- nvim-ufo and its dependency
+  use {
+    'kevinhwang91/nvim-ufo',
+    requires = 'kevinhwang91/promise-async'
+  }
+  use "luukvbaal/statuscol.nvim"
+
+  use {
+  'lukas-reineke/indent-blankline.nvim',
+  config = function()
+    require('ibl').setup() -- Call setup in your config function
+  end
+  }
+
   use {
   'nvim-lualine/lualine.nvim',
   requires = { 'nvim-tree/nvim-web-devicons', opt = true }
@@ -33,7 +49,9 @@ require('packer').startup(function(use)
   use 'williamboman/mason-lspconfig.nvim'
   use 'neovim/nvim-lspconfig'  -- duplicate in original, kept here once
 
-  use { 'catppuccin/vim', as = 'catppuccin' }
+  use { "catppuccin/nvim", as = "catppuccin" }
+
+  use 'folke/tokyonight.nvim'
 
   -- Themes
   -- use 'mhartington/oceanic-next' -- commented out in original
@@ -55,9 +73,16 @@ end
 
 -- Enable syntax highlighting
 vim.cmd('syntax enable')
+vim.opt.termguicolors = true
 
 -- Colorscheme
-vim.cmd('colorscheme OceanicNext')
+--require("tokyonight").setup({
+--  -- use the night style
+--  style = "night",
+-- })
+--vim.cmd[[colorscheme tokyonight]]
+vim.cmd.colorscheme "catppuccin-mocha"
+
 -- vim.cmd('colorscheme catppuccin_macchiato') -- commented out in original
 
 -- Basic options
@@ -91,8 +116,8 @@ vim.api.nvim_set_keymap('n', 'w', ':w<CR>', opts)
 vim.api.nvim_set_keymap('n', 'q', ':q<CR>', opts)
 vim.api.nvim_set_keymap('n', 'q!', ':q!<CR>', opts)
 vim.api.nvim_set_keymap('n', 'wq', ':wq<CR>', opts)
-vim.api.nvim_set_keymap('n', '<leader><Left>', '<C-w>h', opts)
-vim.api.nvim_set_keymap('n', '<leader><Right>', '<C-w>l', opts)
+vim.api.nvim_set_keymap('n', '<leader>h', '<C-w>h', opts)
+vim.api.nvim_set_keymap('n', '<leader>l', '<C-w>l', opts)
 
 vim.api.nvim_set_keymap('x', 'p', 'pgvy', opts)
 
@@ -126,7 +151,13 @@ local function on_attach(bufnr)
   api.config.mappings.default_on_attach(bufnr)
 
   -- Add custom mappings:
-  vim.keymap.set('n', 'v', api.node.open.vertical, opts('Open: Vertical Split'))
+  vim.keymap.set('n', 'v', api.node.open.vertical, {
+        desc = 'NvimTree: Open in vertical split',
+        buffer = bufnr,
+        noremap = true,
+        silent = true,
+        nowait = true,
+      })
   vim.keymap.set('n', 's', api.node.open.horizontal, opts('Open: Horizontal Split'))
 end
 
@@ -174,13 +205,95 @@ vim.api.nvim_create_autocmd("VimEnter", {
 })
 
 ------------------------------------
+
+------------------- NVIM TREESITTER-------------
+
+require('nvim-treesitter.configs').setup {
+  -- Enable syntax highlighting
+  highlight = {
+    enable = true,
+    additional_vim_regex_highlighting = false, -- Optional: Set to true if you need additional regex highlighting
+  },
+  -- Enable indentation
+  indent = {
+    enable = true,
+  },
+  -- Ensure the JavaScript parser is installed
+  ensure_installed = { "javascript", "typescript" },
+  -- auto_install = true, -- Optional: Automatically install parsers for detected filetypes
+  -- Other configurations like textobjects, incremental_selection, etc. can be added here
+}
+------- FOLDING BEHAVIOR -----
+
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldlevel = 99
+vim.opt.foldlevelstart = 99
+vim.opt.fillchars = [[eob: ,fold: ,foldopen:,foldsep: ,foldclose:]]
+vim.opt.foldcolumn = 'auto:9'
+
+vim.opt.foldenable = true -- Enable folding
+
+local ufo = require('ufo')
+ufo.setup({
+    -- Use treesitter as the preferred provider
+    -- This ensures it uses the syntax tree for accurate folding (like JS functions)
+    provider_selector = function(bufnr, filetype, buftype)
+        -- Prioritize treesitter, fall back to indent if no treesitter parser is found
+        return { 'treesitter', 'indent' }
+    end,
+    })
+
+-- In your statuscol.nvim config (e.g., in the 'config' function or a separate file)
+require('statuscol').setup({
+    -- setopt = true is often required to ensure it overrides Neovim's default column behavior
+    setopt = true,
+    segments = {
+        -- 1. Fold Column: Uses 'foldfunc' which is designed to hide the numbers
+        { text = { require('statuscol.builtin').foldfunc }, click = "v:lua.ScFa" },
+        -- 2. Sign Column (for diagnostics/git signs)
+        { text = { '%s' } },
+        -- 3. Line Number (or Relativenumber)
+        { text = { require('statuscol.builtin').lnumfunc, " " }, click = "v:lua.ScLa" }
+    }
+})
+
+--------------------INDENT LINES----
+
+
+
+
+-- Lua configuration (e.g., in init.lua or a plugin config file)
+require('ibl').setup {
+  -- Configure the 'indent' table
+  indent = {
+    -- Change the character used for the indent lines
+    char = '│', -- A vertical line is a common choice
+    -- You can also use a different character for tabs
+    tab_char = '│',
+  },
+
+  -- Other options you might want:
+  -- show_current_context = true, -- Highlights the current scope
+  -- show_current_context_start = true, -- Shows the start of the current scope
+}
+
+
+
+
+
+
+
+
+------------------------------------------------
+-----------------------------------------------------
 --------- lualine -------
 
 
 require('lualine').setup {
   options = {
     icons_enabled = true,
-    theme = 'auto',
+    theme = 'horizon',
     component_separators = { left = '', right = ''},
     section_separators = { left = '', right = ''},
     disabled_filetypes = {
